@@ -155,6 +155,7 @@
           kind: ReplicationController
           metadata:
             name: frontend
+            namespace: mynewnamespace
           spec:
             replicas: 1
             template:
