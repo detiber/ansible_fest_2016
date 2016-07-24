@@ -1,0 +1,16 @@
+---
+- name: Destroy guestbook-all
+  hosts: demo
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Destroy a kubernetes namespace
+      kubernetes:
+        api_endpoint: "{{ kubernetes_api_endpoint }}"
+        insecure: true
+        inline_data:
+          kind: Namespace
+          apiVersion: v1
+          metadata:
+            name: mynewnamespace
+        state: absent

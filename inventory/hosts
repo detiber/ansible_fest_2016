@@ -1,0 +1,5 @@
+[demo]
+localhost
+
+[demo:vars]
+kubernetes_api_endpoint=localhost:8080

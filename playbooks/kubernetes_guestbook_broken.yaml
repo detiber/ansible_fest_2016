@@ -1,0 +1,178 @@
+---
+- name: Create guestbook-all
+  hosts: demo
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Destroy namespace/mynewnamespace
+      kubernetes:
+        api_endpoint: "{{ kubernetes_api_endpoint }}"
+        insecure: true
+        inline_data:
+          kind: Namespace
+          apiVersion: v1
+          metadata:
+            name: mynewnamespace
+        state: absent
+
+    - name: Create service/redis-master
+      kubernetes:
+        api_endpoint: "{{ kubernetes_api_endpoint }}"
+        insecure: true
+        inline_data:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: redis-master
+            namespace: mynewnamespace
+            labels:
+              app: redis
+              tier: backend
+              role: master
+          spec:
+            ports:
+            - port: 6379
+              targetPort: 6379
+            selector:
+              app: redis
+              tier: backend
+              role: master
+        state: present
+
+    - name: Create rc/redis-master
+      kubernetes:
+        api_endpoint: "{{ kubernetes_api_endpoint }}"
+        insecure: true
+        inline_data:
+          apiVersion: v1
+          kind: ReplicationController
+          metadata:
+            name: redis-master
+            namespace: mynewnamespace
+          spec:
+            replicas: 1
+            template:
+              metadata:
+                labels:
+                  app: redis
+                  role: master
+                  tier: backend
+              spec:
+                containers:
+                - name: master
+                  image: gcr.io/google_containers/redis:e2e
+                  resources:
+                    requests:
+                      cpu: 100m
+                      memory: 100Mi
+                  ports:
+                  - containerPort: 6379
+        state: present
+
+    - name: Create service/redis-slave
+      kubernetes:
+        api_endpoint: "{{ kubernetes_api_endpoint }}"
+        insecure: true
+        inline_data:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: redis-slave
+            namespace: mynewnamespace
+            labels:
+              app: redis
+              tier: backend
+              role: slave
+          spec:
+            ports:
+            - port: 6379
+            selector:
+              app: redis
+              tier: backend
+              role: slave
+        state: present
+
+    - name: Create rc/redis-slave
+      kubernetes:
+        api_endpoint: "{{ kubernetes_api_endpoint }}"
+        insecure: true
+        inline_data:
+          apiVersion: v1
+          kind: ReplicationController
+          metadata:
+            name: redis-slave
+            namespace: mynewnamespace
+          spec:
+            replicas: 2
+            template:
+              metadata:
+                labels:
+                  app: redis
+                  role: slave
+                  tier: backend
+              spec:
+                containers:
+                - name: slave
+                  image: gcr.io/google_samples/gb-redisslave:v1
+                  resources:
+                    requests:
+                      cpu: 100m
+                      memory: 100Mi
+                  env:
+                  - name: GET_HOSTS_FROM
+                    value: dns
+                  ports:
+                  - containerPort: 6379
+        state: present
+
+    - name: Create service/frontend
+      kubernetes:
+        api_endpoint: "{{ kubernetes_api_endpoint }}"
+        insecure: true
+        inline_data:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: frontend
+            namespace: mynewnamespace
+            labels:
+              app: guestbook
+              tier: frontend
+          spec:
+            ports:
+            - port: 80
+            selector:
+              app: guestbook
+              tier: frontend
+        state: present
+
+    - name: Create rc/frontend
+      kubernetes:
+        api_endpoint: "{{ kubernetes_api_endpoint }}"
+        insecure: true
+        inline_data:
+          apiVersion: v1
+          kind: ReplicationController
+          metadata:
+            name: frontend
+          spec:
+            replicas: 1
+            template:
+              metadata:
+                labels:
+                  app: guestbook
+                  tier: frontend
+              spec:
+                containers:
+                - name: php-redis
+                  image: gcr.io/google-samples/gb-frontend:v4
+                  resources:
+                    requests:
+                      cpu: 100m
+                      memory: 100Mi
+                  env:
+                  - name: GET_HOSTS_FROM
+                    value: dns
+                  ports:
+                  - containerPort: 80
+        state: present
