@@ -1,0 +1,13 @@
+---
+- name: Create guestbook-all
+  hosts: demo
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Create namespace/mynewnamespace
+      k8s_pod:
+        api_endpoint: "{{ kubernetes_api_endpoint }}"
+        name: ansibull
+        namespace: ansibull
+        state: present
+
