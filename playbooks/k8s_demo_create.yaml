@@ -4,10 +4,14 @@
   connection: local
   gather_facts: false
   tasks:
-    - name: Create namespace/mynewnamespace
+    - name: Create pod
       k8s_pod:
         api_endpoint: "{{ kubernetes_api_endpoint }}"
         name: ansibull
         namespace: ansibull
         state: present
+        containers:
+        - name: ansibull-nginx
+          image: nginx
+
 

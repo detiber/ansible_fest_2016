@@ -96,7 +96,8 @@ def main():
             certificate_authority=dict(default=None, type='str'),
             insecure_skip_tls_verify=dict(default='no', type='bool'),
             labels=dict(default=None, type='dict'),
-            annotations=dict(default=None, type='dict')
+            annotations=dict(default=None, type='dict'),
+            containers=dict(default=None, type='list')
         )
     )
     wrapper = Wrapper(
@@ -116,7 +117,8 @@ def main():
             api_version=module.params.get('api_version'),
             labels=module.params.get('labels'),
             annotations=module.params.get('annotations'),
-            state=module.params.get('state')
+            state=module.params.get('state'),
+            containers=module.params.get('containers')
         )
     except WrapperException as err:
         module.fail_json(msg=err)

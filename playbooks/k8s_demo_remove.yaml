@@ -1,0 +1,15 @@
+---
+- name: Remove guestbook-all
+  hosts: demo
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Remove namespace
+      k8s_namespace:
+        api_endpoint: "{{ kubernetes_api_endpoint }}"
+        name: "{{ item }}"
+        state: absent
+      with_items:
+      - ansibull
+
+
