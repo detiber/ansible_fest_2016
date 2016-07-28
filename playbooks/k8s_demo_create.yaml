@@ -3,15 +3,61 @@
   hosts: demo
   connection: local
   gather_facts: false
+  vars:
+    namespace: guestbook
+    services:
+    - name: redis_master
+      replicas: 1
+      labels:
+        app: redis
+        tier: backend
+        role: master
+      ports:
+      - port: 6739
+        targetPort: 6379
+      image: gcr.io/google_containers/redis:e2e
+    - name: redis-slave
+      replicas: 2
+      labels:
+        app: redis
+        tier: backend
+        role: slave
+      ports:
+      - port: 6739
+        targetPort: 6379
+      image: gcr.io/google_samples/gb-redisslave:v1
+    - name: frontend
+      replicas: 3
+      labels:
+        app: guestbook
+        tier: frontend
+      ports:
+      - port: 80
+      image: gcr.io/google-samples/gb-frontend:v4
   tasks:
-    - name: Create pod
-      k8s_pod:
-        api_endpoint: "{{ kubernetes_api_endpoint }}"
-        name: ansibull
-        namespace: ansibull
-        state: present
-        containers:
-        - name: ansibull-nginx
-          image: nginx
+    - name: Create services
+      k8s_service:
+        name: "{{ item.name }}"
+        namespace: "{{ namespace }}"
+        labels: "{{ item.labels }}"
+        ports: "{{ item.ports }}"
+        selector: "{{ item.labels }}"
+      with_items: "{{ services }}"
 
-
+    - name: Create redis-master rc
+      k8s_replication_controller:
+        name: "{{ item.name }}"
+        namespace: "{{ namespace }}"
+        labels: "{{ item.labels }}"
+        template:
+          metadata: "{{ item.labels }}"
+          spec:
+            containers:
+            - name: "{{ item.name }}"
+              image: "{{ item.image }}"
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 100Mi
+              ports:
+                containerPort: "{{ ports.0.port }}"
