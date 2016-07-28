@@ -1,0 +1,14 @@
+---
+- name: Create guestbook-all
+  hosts: demo
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Create pod
+      k8s_pod:
+        name: ansibull
+        namespace: ansibull
+        state: present
+        containers:
+        - name: ansibull-hello
+          image: openshift/hello-openshift

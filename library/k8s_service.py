@@ -98,7 +98,8 @@ def main():
             labels=dict(default=None, type='dict'),
             annotations=dict(default=None, type='dict'),
             ports=dict(default=None, type='list'),
-            selector=dict(default=None, type='dict')
+            selector=dict(default=None, type='dict'),
+            type=dict(default=None, type='str'),
         )
     )
     wrapper = Wrapper(
@@ -120,7 +121,8 @@ def main():
             annotations=module.params.get('annotations'),
             state=module.params.get('state'),
             ports=module.params.get('ports'),
-            selector=module.params.get('selector')
+            selector=module.params.get('selector'),
+            type=module.params.get('type')
         )
     except WrapperException as err:
         module.fail_json(msg=err)

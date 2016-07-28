@@ -15,6 +15,7 @@
       ports:
       - port: 6739
         targetPort: 6379
+      service_type: ClusterIP
       image: gcr.io/google_containers/redis:e2e
     - name: redis-slave
       replicas: 2
@@ -25,6 +26,7 @@
       ports:
       - port: 6739
         targetPort: 6379
+      service_type: ClusterIP
       image: gcr.io/google_samples/gb-redisslave:v1
     - name: frontend
       replicas: 3
@@ -33,7 +35,9 @@
         tier: frontend
       ports:
       - port: 80
-      image: gcr.io/google-samples/gb-frontend:v4
+        targetPort: 8080
+      service_type: NodePort
+      image: gcr.io/google_containers/guestbook:v3
   tasks:
     - name: Create services
       k8s_service:
@@ -42,6 +46,7 @@
         labels: "{{ item.labels }}"
         ports: "{{ item.ports }}"
         selector: "{{ item.labels }}"
+        type: "{{ item.service_type }}"
       with_items: "{{ services }}"
 
     - name: Create replication controller
@@ -62,5 +67,5 @@
                   cpu: 100m
                   memory: 100Mi
               ports:
-              - containerPort: "{{ item.ports.0.port }}"
+              - containerPort: "{{ item.ports.0.targetPort }}"
       with_items: "{{ services }}"
