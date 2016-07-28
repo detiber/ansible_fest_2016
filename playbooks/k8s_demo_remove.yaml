@@ -1,15 +1,25 @@
 ---
-- name: Remove guestbook-all
+- name: Create guestbook-all
   hosts: demo
   connection: local
   gather_facts: false
+  vars:
+    namespace: guestbook
+    services:
+    - redis_master
+    - redis-slave
+    - frontend
   tasks:
-    - name: Remove namespace
-      k8s_namespace:
-        api_endpoint: "{{ kubernetes_api_endpoint }}"
-        name: "{{ item }}"
-        state: absent
-      with_items:
-      - ansibull
+  - name: Remove services
+    k8s_service:
+      name: "{{ item }}"
+      namespace: "{{ namespace }}"
+      state: absent
+    with_items: "{{ services }}"
 
-
+  - name: Remove replication controllers
+    k8s_replication_controller:
+      name: "{{ item }}"
+      namespace: "{{ namespace }}"
+      state: absent
+    with_items: "{{ services }}"

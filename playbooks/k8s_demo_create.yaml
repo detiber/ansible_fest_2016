@@ -6,7 +6,7 @@
   vars:
     namespace: guestbook
     services:
-    - name: redis_master
+    - name: redis-master
       replicas: 1
       labels:
         app: redis
@@ -44,13 +44,14 @@
         selector: "{{ item.labels }}"
       with_items: "{{ services }}"
 
-    - name: Create redis-master rc
+    - name: Create replication controller
       k8s_replication_controller:
         name: "{{ item.name }}"
         namespace: "{{ namespace }}"
         labels: "{{ item.labels }}"
         template:
-          metadata: "{{ item.labels }}"
+          metadata:
+            labels: "{{ item.labels }}"
           spec:
             containers:
             - name: "{{ item.name }}"
@@ -60,4 +61,5 @@
                   cpu: 100m
                   memory: 100Mi
               ports:
-                containerPort: "{{ ports.0.port }}"
+              - containerPort: "{{ item.ports.0.port }}"
+      with_items: "{{ services }}"
