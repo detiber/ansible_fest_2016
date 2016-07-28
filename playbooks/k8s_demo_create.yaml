@@ -49,6 +49,7 @@
         name: "{{ item.name }}"
         namespace: "{{ namespace }}"
         labels: "{{ item.labels }}"
+        replicas: "{{ item.replicas }}"
         template:
           metadata:
             labels: "{{ item.labels }}"

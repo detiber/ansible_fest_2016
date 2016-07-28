@@ -6,7 +6,7 @@
   vars:
     namespace: guestbook
     services:
-    - redis_master
+    - redis-master
     - redis-slave
     - frontend
   tasks:

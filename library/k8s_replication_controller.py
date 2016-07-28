@@ -97,6 +97,7 @@ def main():
             insecure_skip_tls_verify=dict(default='no', type='bool'),
             labels=dict(default=None, type='dict'),
             annotations=dict(default=None, type='dict'),
+            replicas=dict(default=1, type='int'),
             template=dict(default=None, type='dict')
         )
     )
@@ -118,6 +119,7 @@ def main():
             labels=module.params.get('labels'),
             annotations=module.params.get('annotations'),
             state=module.params.get('state'),
+            replicas=module.params.get('replicas'),
             template=module.params.get('template')
         )
     except WrapperException as err:
